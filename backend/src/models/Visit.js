@@ -11,4 +11,6 @@ const visitSchema = new mongoose.Schema(
   { versionKey: false }
 );
 
+visitSchema.index({ url: 1, visitedAt: -1 });
+
 module.exports = mongoose.model('Visit', visitSchema);
