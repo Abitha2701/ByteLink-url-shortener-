@@ -1,0 +1,23 @@
+{
+  "name": "bytelink",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Full-stack URL Shortener application scaffold with React, Vite, Tailwind CSS, Node.js, Express, and MongoDB.",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm --workspace frontend run dev",
+    "build:frontend": "npm --workspace frontend run build",
+    "preview:frontend": "npm --workspace frontend run preview",
+    "dev:backend": "npm --workspace backend run dev",
+    "start:backend": "npm --workspace backend run start",
+    "lint:frontend": "npm --workspace frontend run lint",
+    "lint:backend": "npm --workspace backend run lint"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
