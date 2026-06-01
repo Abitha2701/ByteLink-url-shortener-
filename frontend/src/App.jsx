@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import RequireAuth from './components/RequireAuth';
 import { useAuth } from './context/AuthContext';
@@ -24,6 +25,9 @@ function App() {
             </Link>
             {user ? (
               <>
+                <Link className="text-slate-600 hover:text-slate-900" to="/dashboard">
+                  Dashboard
+                </Link>
                 <Link className="text-slate-600 hover:text-slate-900" to="/profile">
                   Profile
                 </Link>
@@ -54,6 +58,14 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/profile"
             element={

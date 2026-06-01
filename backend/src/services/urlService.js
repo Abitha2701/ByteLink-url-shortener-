@@ -52,6 +52,17 @@ function getUrlsForUser(userId) {
   return Url.find({ user: userId, active: true }).sort({ createdAt: -1 });
 }
 
+async function deleteUrlById(userId, urlId) {
+  const url = await Url.findOne({ _id: urlId, user: userId, active: true });
+  if (!url) {
+    throw new ApiError(404, 'URL not found or access denied');
+  }
+
+  url.active = false;
+  await url.save();
+  return url;
+}
+
 function formatUrlResponse(url, baseUrl) {
   return {
     id: url._id.toString(),
@@ -67,5 +78,6 @@ function formatUrlResponse(url, baseUrl) {
 module.exports = {
   createShortUrl,
   getUrlsForUser,
+  deleteUrlById,
   formatUrlResponse
 };

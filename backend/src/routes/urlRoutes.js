@@ -7,5 +7,6 @@ router.use(requireAuth);
 
 router.post('/', urlController.createUrl);
 router.get('/', urlController.getMyUrls);
+router.delete('/:id', urlController.deleteUrl);
 
 module.exports = router;

@@ -29,4 +29,14 @@ async function getMyUrls(req, res, next) {
   }
 }
 
-module.exports = { createUrl, getMyUrls };
+async function deleteUrl(req, res, next) {
+  try {
+    const { id } = req.params;
+    await urlService.deleteUrlById(req.user._id, id);
+    return res.status(204).end();
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { createUrl, getMyUrls, deleteUrl };
