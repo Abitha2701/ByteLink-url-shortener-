@@ -1,39 +1,51 @@
+const ApiError = require('../errors/ApiError');
 const authService = require('../services/authService');
 
-async function signup(req, res) {
+async function signup(req, res, next) {
   const { name, email, password } = req.body;
+
   if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Name, email and password are required' });
+    return next(new ApiError(400, 'Name, email and password are required'));
   }
 
   try {
     const user = await authService.createUser({ name, email, password });
     const token = authService.generateToken(user);
-    return res.status(201).json({ user: { id: user._id, name: user.name, email: user.email }, token });
+
+    return res.status(201).json({ user: authService.getPublicUser(user), token });
   } catch (err) {
-    const status = err.status || 500;
-    return res.status(status).json({ message: err.message || 'Failed to create user' });
+    return next(err);
   }
 }
 
-async function login(req, res) {
+async function login(req, res, next) {
   const { email, password } = req.body;
+
   if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
+    return next(new ApiError(400, 'Email and password are required'));
   }
 
   try {
     const user = await authService.findByEmail(email);
-    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+    const valid = user && (await authService.validatePassword(password, user.passwordHash));
 
-    const valid = await authService.validatePassword(password, user.passwordHash);
-    if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!user || !valid) {
+      return next(new ApiError(401, 'Invalid credentials'));
+    }
 
     const token = authService.generateToken(user);
-    return res.json({ user: { id: user._id, name: user.name, email: user.email }, token });
+    return res.json({ user: authService.getPublicUser(user), token });
   } catch (err) {
-    return res.status(500).json({ message: 'Server error' });
+    return next(err);
   }
 }
 
-module.exports = { signup, login };
+async function getProfile(req, res, next) {
+  if (!req.user) {
+    return next(new ApiError(401, 'Authentication required'));
+  }
+
+  return res.json({ user: authService.getPublicUser(req.user) });
+}
+
+module.exports = { signup, login, getProfile };

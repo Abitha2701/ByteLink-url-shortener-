@@ -1,24 +1,19 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { parseBearerToken, getUserFromToken } = require('../helpers/authHelpers');
+const ApiError = require('../errors/ApiError');
 
-module.exports = async function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Missing or invalid Authorization header' });
+async function requireAuth(req, res, next) {
+  const token = parseBearerToken(req.headers.authorization);
+  if (!token) {
+    return next(new ApiError(401, 'Missing or invalid Authorization header'));
   }
 
-  const token = authHeader.split(' ')[1];
   try {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) throw new Error('JWT_SECRET is not defined');
-
-    const payload = jwt.verify(token, secret);
-    const user = await User.findById(payload.sub).select('-passwordHash');
-    if (!user) return res.status(401).json({ message: 'Invalid token' });
-
+    const { user } = await getUserFromToken(token);
     req.user = user;
-    next();
+    return next();
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    return next(err);
   }
-};
+}
+
+module.exports = { requireAuth };
