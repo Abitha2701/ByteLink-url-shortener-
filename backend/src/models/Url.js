@@ -11,4 +11,6 @@ const urlSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+urlSchema.index({ user: 1, longUrl: 1 }, { unique: true, sparse: true });
+
 module.exports = mongoose.model('Url', urlSchema);

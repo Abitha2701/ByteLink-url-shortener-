@@ -1,40 +1,14 @@
 const Url = require('../models/Url');
 const ApiError = require('../errors/ApiError');
+const { generateUniqueShortCode } = require('../utils/codeGenerator');
+const { isValidUrl, normalizeUrl } = require('../utils/urlValidator');
 
-const CODE_LENGTH = 7;
-const CODE_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-function isValidUrl(value) {
-  try {
-    const parsed = new URL(value);
-    return ['http:', 'https:'].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-}
-
-function generateShortCode() {
-  let code = '';
-  for (let i = 0; i < CODE_LENGTH; i += 1) {
-    code += CODE_CHARACTERS.charAt(Math.floor(Math.random() * CODE_CHARACTERS.length));
-  }
-  return code;
-}
-
-async function generateUniqueShortCode() {
-  let shortCode;
-  let exists = true;
-
-  while (exists) {
-    shortCode = generateShortCode();
-    exists = await Url.exists({ shortCode });
-  }
-
-  return shortCode;
+async function findExistingUrlForUser(userId, longUrl) {
+  return Url.findOne({ user: userId, longUrl });
 }
 
 async function createShortUrl(userId, longUrl) {
-  const normalizedUrl = String(longUrl || '').trim();
+  const normalizedUrl = normalizeUrl(longUrl);
 
   if (!normalizedUrl) {
     throw new ApiError(400, 'The longUrl field is required.');
@@ -44,14 +18,34 @@ async function createShortUrl(userId, longUrl) {
     throw new ApiError(400, 'Please provide a valid URL using http:// or https://.');
   }
 
-  const shortCode = await generateUniqueShortCode();
-  const url = await Url.create({
-    longUrl: normalizedUrl,
-    shortCode,
-    user: userId
-  });
+  const existingUrl = await findExistingUrlForUser(userId, normalizedUrl);
+  if (existingUrl) {
+    return existingUrl;
+  }
 
-  return url;
+  const shortCode = await generateUniqueShortCode((code) => Url.exists({ shortCode: code }));
+
+  try {
+    return await Url.create({
+      longUrl: normalizedUrl,
+      shortCode,
+      user: userId
+    });
+  } catch (error) {
+    const duplicateKey = error.code === 11000;
+    if (duplicateKey) {
+      if (error.message.includes('shortCode')) {
+        return createShortUrl(userId, normalizedUrl);
+      }
+      if (error.message.includes('user') && error.message.includes('longUrl')) {
+        const existing = await findExistingUrlForUser(userId, normalizedUrl);
+        if (existing) {
+          return existing;
+        }
+      }
+    }
+    throw new ApiError(500, 'Unable to create a unique shortened URL at this time.');
+  }
 }
 
 function getUrlsForUser(userId) {
@@ -63,7 +57,7 @@ function formatUrlResponse(url, baseUrl) {
     id: url._id.toString(),
     longUrl: url.longUrl,
     shortCode: url.shortCode,
-    shortUrl: `${baseUrl}/${url.shortCode}`,
+    shortUrl: `${baseUrl.replace(/\/+$/, '')}/${url.shortCode}`,
     clicks: url.clicks,
     createdAt: url.createdAt,
     updatedAt: url.updatedAt
