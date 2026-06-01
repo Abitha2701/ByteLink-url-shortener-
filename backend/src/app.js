@@ -4,6 +4,7 @@ const ApiError = require('./errors/ApiError');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const urlRoutes = require('./routes/urlRoutes');
+const redirectRoutes = require('./routes/redirectRoutes');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/api', (req, res, next) => {
   next(new ApiError(404, 'API endpoint not found'));
 });
 
+app.use('/', redirectRoutes);
 app.use(errorHandler);
 
 module.exports = app;

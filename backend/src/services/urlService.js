@@ -52,6 +52,27 @@ function getUrlsForUser(userId) {
   return Url.find({ user: userId, active: true }).sort({ createdAt: -1 });
 }
 
+async function findUrlByShortCode(shortCode) {
+  return Url.findOne({ shortCode });
+}
+
+async function resolveRedirectUrl(shortCode) {
+  const url = await findUrlByShortCode(shortCode);
+  if (!url || !url.active) {
+    throw new ApiError(404, 'Link not found');
+  }
+
+  if (url.expiresAt && url.expiresAt <= new Date()) {
+    throw new ApiError(410, 'This link has expired');
+  }
+
+  return url;
+}
+
+async function incrementClickCount(urlId) {
+  return Url.findByIdAndUpdate(urlId, { $inc: { clicks: 1 } }, { new: true });
+}
+
 async function deleteUrlById(userId, urlId) {
   const url = await Url.findOne({ _id: urlId, user: userId, active: true });
   if (!url) {
@@ -70,6 +91,7 @@ function formatUrlResponse(url, baseUrl) {
     shortCode: url.shortCode,
     shortUrl: `${baseUrl.replace(/\/+$/, '')}/${url.shortCode}`,
     clicks: url.clicks,
+    expiresAt: url.expiresAt || null,
     createdAt: url.createdAt,
     updatedAt: url.updatedAt
   };
@@ -79,5 +101,8 @@ module.exports = {
   createShortUrl,
   getUrlsForUser,
   deleteUrlById,
+  findUrlByShortCode,
+  resolveRedirectUrl,
+  incrementClickCount,
   formatUrlResponse
 };
