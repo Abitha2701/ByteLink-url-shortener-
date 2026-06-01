@@ -3,6 +3,7 @@ const cors = require('cors');
 const ApiError = require('./errors/ApiError');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
+const urlRoutes = require('./routes/urlRoutes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/urls', urlRoutes);
 
 app.use('/api', (req, res, next) => {
   next(new ApiError(404, 'API endpoint not found'));
