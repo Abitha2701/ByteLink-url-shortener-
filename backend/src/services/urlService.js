@@ -16,9 +16,10 @@ async function findExistingUrlForUser(userId, longUrl) {
   return Url.findOne({ user: userId, longUrl });
 }
 
-async function createShortUrl(userId, longUrl, customAlias) {
+async function createShortUrl(userId, longUrl, customAlias, expiresAtRaw) {
   const normalizedUrl = normalizeUrl(longUrl);
   const alias = String(customAlias || '').trim() || null;
+  const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
 
   if (!normalizedUrl) {
     throw new ApiError(400, 'The longUrl field is required.');
@@ -33,6 +34,15 @@ async function createShortUrl(userId, longUrl, customAlias) {
       400,
       'Custom alias must be 4-30 characters and may only contain letters, numbers, hyphens, and underscores.'
     );
+  }
+
+  if (expiresAtRaw) {
+    if (Number.isNaN(expiresAt.getTime())) {
+      throw new ApiError(400, 'Expiration date must be a valid date.');
+    }
+    if (expiresAt <= new Date()) {
+      throw new ApiError(400, 'Expiration date must be in the future.');
+    }
   }
 
   const existingUrl = await findExistingUrlForUser(userId, normalizedUrl);
@@ -64,13 +74,14 @@ async function createShortUrl(userId, longUrl, customAlias) {
     return await Url.create({
       longUrl: normalizedUrl,
       shortCode,
-      user: userId
+      user: userId,
+      expiresAt: expiresAt || null
     });
   } catch (error) {
     const duplicateKey = error.code === 11000;
     if (duplicateKey) {
       if (error.message.includes('shortCode')) {
-        return createShortUrl(userId, normalizedUrl, alias);
+        return createShortUrl(userId, normalizedUrl, alias, expiresAtRaw);
       }
       if (error.message.includes('user') && error.message.includes('longUrl')) {
         const existing = await findExistingUrlForUser(userId, normalizedUrl);

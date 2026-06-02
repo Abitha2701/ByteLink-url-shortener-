@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [urls, setUrls] = useState([]);
   const [urlInput, setUrlInput] = useState('');
   const [aliasInput, setAliasInput] = useState('');
+  const [expiresAtInput, setExpiresAtInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -109,11 +110,17 @@ export default function Dashboard() {
       return;
     }
 
+    if (expiresAtInput && new Date(expiresAtInput) <= new Date()) {
+      setError('Expiration date must be in the future.');
+      return;
+    }
+
     setSaving(true);
     try {
       const response = await api.post('/api/urls', {
         longUrl: urlInput.trim(),
-        alias: aliasInput.trim() || undefined
+        alias: aliasInput.trim() || undefined,
+        expiresAt: expiresAtInput || undefined
       });
       const newUrl = response.data.url;
       setUrls((current) => {
@@ -127,6 +134,7 @@ export default function Dashboard() {
       });
       setUrlInput('');
       setAliasInput('');
+      setExpiresAtInput('');
       setSelectedUrl(newUrl);
       setNotification('URL shortened successfully.');
     } catch (err) {
@@ -204,6 +212,20 @@ export default function Dashboard() {
             />
             <p className="mt-2 text-xs text-slate-500">
               4-30 characters, letters, numbers, hyphens, and underscores only.
+            </p>
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Expiration date (optional)</span>
+            <input
+              value={expiresAtInput}
+              onChange={(event) => setExpiresAtInput(event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              type="datetime-local"
+              min={new Date().toISOString().slice(0, 16)}
+            />
+            <p className="mt-2 text-xs text-slate-500">
+              Optional. The link will stop redirecting after this date and time.
             </p>
           </label>
 
@@ -343,7 +365,14 @@ export default function Dashboard() {
                       </div>
                       <div className="rounded-3xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
                         <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Status</p>
-                        <p className="mt-2 text-xl font-semibold text-slate-900">Active</p>
+                        <p className="mt-2 text-xl font-semibold text-slate-900">
+                          {url.expiresAt && new Date(url.expiresAt) <= new Date() ? 'Expired' : 'Active'}
+                        </p>
+                        {url.expiresAt && (
+                          <p className="mt-1 text-xs text-slate-500">
+                            Expires {formatDate(url.expiresAt)}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
