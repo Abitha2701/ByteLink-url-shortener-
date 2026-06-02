@@ -44,19 +44,22 @@ app.use(hpp());
 
 // 3. CORS - Enhanced configuration
 app.use(cors({
-  origin: function(origin, callback) {
-    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(o => o.trim());
-    
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+  origin: function (origin, callback) {
+    const allowedOrigins = (byte-link-url-shortener.vercel.app || "http://localhost:5173")
+      .split(",")
+      .map(o => o.trim());
+
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+      return callback(null, true);
     }
+
+    console.warn(`Blocked CORS request from: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400 // 24 hours
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400
 }));
 
 // 4. Body parsers with limits
