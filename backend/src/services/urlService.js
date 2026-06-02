@@ -2,7 +2,7 @@ const QRCode = require('qrcode');
 const Url = require('../models/Url');
 const ApiError = require('../errors/ApiError');
 const { generateUniqueShortCode } = require('../utils/codeGenerator');
-const { isValidUrl, normalizeUrl } = require('../utils/urlValidator');
+const { isValidAlias, isValidUrl, normalizeUrl } = require('../utils/urlValidator');
 
 function buildShortUrl(baseUrl, shortCode) {
   return `${baseUrl.replace(/\/+$|\s+/g, '')}/${shortCode}`;
@@ -16,8 +16,9 @@ async function findExistingUrlForUser(userId, longUrl) {
   return Url.findOne({ user: userId, longUrl });
 }
 
-async function createShortUrl(userId, longUrl) {
+async function createShortUrl(userId, longUrl, customAlias) {
   const normalizedUrl = normalizeUrl(longUrl);
+  const alias = String(customAlias || '').trim() || null;
 
   if (!normalizedUrl) {
     throw new ApiError(400, 'The longUrl field is required.');
@@ -27,12 +28,37 @@ async function createShortUrl(userId, longUrl) {
     throw new ApiError(400, 'Please provide a valid URL using http:// or https://.');
   }
 
+  if (alias && !isValidAlias(alias)) {
+    throw new ApiError(
+      400,
+      'Custom alias must be 4-30 characters and may only contain letters, numbers, hyphens, and underscores.'
+    );
+  }
+
   const existingUrl = await findExistingUrlForUser(userId, normalizedUrl);
   if (existingUrl) {
+    if (alias && existingUrl.shortCode !== alias) {
+      throw new ApiError(
+        409,
+        'A short URL already exists for this destination. Delete the existing one first to choose a new custom alias.'
+      );
+    }
+
+    if (alias && existingUrl.shortCode === alias) {
+      return existingUrl;
+    }
+
     return existingUrl;
   }
 
-  const shortCode = await generateUniqueShortCode((code) => Url.exists({ shortCode: code }));
+  if (alias) {
+    const aliasConflict = await findUrlByShortCode(alias);
+    if (aliasConflict) {
+      throw new ApiError(409, 'The custom alias is already in use. Please choose another one.');
+    }
+  }
+
+  const shortCode = alias || (await generateUniqueShortCode((code) => Url.exists({ shortCode: code })));
 
   try {
     return await Url.create({
@@ -44,7 +70,7 @@ async function createShortUrl(userId, longUrl) {
     const duplicateKey = error.code === 11000;
     if (duplicateKey) {
       if (error.message.includes('shortCode')) {
-        return createShortUrl(userId, normalizedUrl);
+        return createShortUrl(userId, normalizedUrl, alias);
       }
       if (error.message.includes('user') && error.message.includes('longUrl')) {
         const existing = await findExistingUrlForUser(userId, normalizedUrl);

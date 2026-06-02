@@ -7,10 +7,10 @@ function getAppBaseUrl(req) {
 }
 
 async function createUrl(req, res, next) {
-  const { longUrl } = req.body;
+  const { longUrl, alias } = req.body;
 
   try {
-    const url = await urlService.createShortUrl(req.user._id, longUrl);
+    const url = await urlService.createShortUrl(req.user._id, longUrl, alias);
     const response = await urlService.formatUrlResponse(url, getAppBaseUrl(req));
     return res.status(201).json({ url: response });
   } catch (err) {

@@ -16,6 +16,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [urls, setUrls] = useState([]);
   const [urlInput, setUrlInput] = useState('');
+  const [aliasInput, setAliasInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -110,7 +111,10 @@ export default function Dashboard() {
 
     setSaving(true);
     try {
-      const response = await api.post('/api/urls', { longUrl: urlInput.trim() });
+      const response = await api.post('/api/urls', {
+        longUrl: urlInput.trim(),
+        alias: aliasInput.trim() || undefined
+      });
       const newUrl = response.data.url;
       setUrls((current) => {
         const existingIndex = current.findIndex((item) => item.id === newUrl.id);
@@ -122,6 +126,7 @@ export default function Dashboard() {
         return [newUrl, ...current];
       });
       setUrlInput('');
+      setAliasInput('');
       setSelectedUrl(newUrl);
       setNotification('URL shortened successfully.');
     } catch (err) {
@@ -186,6 +191,20 @@ export default function Dashboard() {
               placeholder="Enter the URL you want to shorten"
               type="url"
             />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Custom alias (optional)</span>
+            <input
+              value={aliasInput}
+              onChange={(event) => setAliasInput(event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              placeholder="Choose a custom alias (letters, numbers, - or _)"
+              type="text"
+            />
+            <p className="mt-2 text-xs text-slate-500">
+              4-30 characters, letters, numbers, hyphens, and underscores only.
+            </p>
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">

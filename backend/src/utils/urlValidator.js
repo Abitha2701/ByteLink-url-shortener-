@@ -7,8 +7,12 @@ function isValidUrl(value) {
   }
 }
 
+function isValidAlias(value) {
+  return /^[A-Za-z0-9_-]{4,30}$/.test(String(value || '').trim());
+}
+
 function normalizeUrl(value) {
   return String(value || '').trim();
 }
 
-module.exports = { isValidUrl, normalizeUrl };
+module.exports = { isValidUrl, isValidAlias, normalizeUrl };
