@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
+import Analytics from './pages/Analytics';
 import NotFound from './pages/NotFound';
 import RequireAuth from './components/RequireAuth';
 import { useAuth } from './context/AuthContext';
@@ -27,6 +28,9 @@ function App() {
               <>
                 <Link className="text-slate-600 hover:text-slate-900" to="/dashboard">
                   Dashboard
+                </Link>
+                <Link className="text-slate-600 hover:text-slate-900" to="/analytics">
+                  Analytics
                 </Link>
                 <Link className="text-slate-600 hover:text-slate-900" to="/profile">
                   Profile
@@ -63,6 +67,14 @@ function App() {
             element={
               <RequireAuth>
                 <Dashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <RequireAuth>
+                <Analytics />
               </RequireAuth>
             }
           />
