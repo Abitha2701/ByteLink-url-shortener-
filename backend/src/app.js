@@ -45,9 +45,9 @@ app.use(hpp());
 // 3. CORS - Enhanced configuration
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = (byte-link-url-shortener.vercel.app || "http://localhost:5173")
+    const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
       .split(",")
-      .map(o => o.trim());
+      .map(o => o.trim());       
 
     if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
       return callback(null, true);
