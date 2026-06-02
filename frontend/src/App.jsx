@@ -6,6 +6,7 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import NotFound from './pages/NotFound';
+import PublicStats from './pages/PublicStats';
 import RequireAuth from './components/RequireAuth';
 import { useAuth } from './context/AuthContext';
 
@@ -78,6 +79,7 @@ function App() {
               </RequireAuth>
             }
           />
+          <Route path="/stats/:shortCode" element={<PublicStats />} />
           <Route
             path="/profile"
             element={

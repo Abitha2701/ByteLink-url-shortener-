@@ -24,4 +24,14 @@ async function getUserAnalytics(req, res, next) {
   }
 }
 
-module.exports = { getUrlAnalytics, getUserAnalytics };
+async function getPublicUrlStats(req, res, next) {
+  try {
+    const { shortCode } = req.params;
+    const analytics = await analyticsService.getPublicUrlStats(shortCode, getAppBaseUrl(req));
+    return res.json({ analytics });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { getUrlAnalytics, getUserAnalytics, getPublicUrlStats };

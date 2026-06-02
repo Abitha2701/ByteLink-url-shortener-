@@ -4,6 +4,7 @@ const ApiError = require('./errors/ApiError');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const urlRoutes = require('./routes/urlRoutes');
+const publicRoutes = require('./routes/publicRoutes');
 const redirectRoutes = require('./routes/redirectRoutes');
 
 const app = express();
@@ -18,6 +19,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/urls', urlRoutes);
+app.use('/api/public', publicRoutes);
 
 app.use('/api', (req, res, next) => {
   next(new ApiError(404, 'API endpoint not found'));

@@ -250,4 +250,80 @@ async function getUserAnalytics(userId, baseUrl, days = 14) {
   };
 }
 
-module.exports = { getUrlAnalytics, getUserAnalytics };
+async function getPublicUrlStats(shortCode, baseUrl, days = 14) {
+  const url = await Url.findOne({ shortCode, active: true });
+  if (!url) {
+    throw new ApiError(404, 'Short URL not found');
+  }
+
+  const matchStage = { url: url._id };
+
+  const summaryPromise = Visit.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: null,
+        totalClicks: { $sum: 1 },
+        lastVisitedAt: { $max: '$visitedAt' }
+      }
+    }
+  ]);
+
+  const dailyPromise = Visit.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: {
+          $dateToString: { format: '%Y-%m-%d', date: '$visitedAt', timezone: 'UTC' }
+        },
+        count: { $sum: 1 }
+      }
+    },
+    { $sort: { _id: 1 } }
+  ]);
+
+  const lastVisitPromise = Visit.findOne(matchStage)
+    .sort({ visitedAt: -1 })
+    .select('visitedAt referrer ipAddress userAgent')
+    .lean();
+
+  const [summaryResults, dailyResults, lastVisit] = await Promise.all([
+    summaryPromise,
+    dailyPromise,
+    lastVisitPromise
+  ]);
+
+  const totalClicks = summaryResults[0]?.totalClicks ?? url.clicks ?? 0;
+  const lastVisitedAt = summaryResults[0]?.lastVisitedAt || null;
+  const daysActive = Math.max(1, Math.ceil((new Date() - url.createdAt) / (1000 * 60 * 60 * 24)));
+  const averageClicksPerDay = totalClicks / daysActive;
+  const peakDayClicks = dailyResults.reduce((max, item) => Math.max(max, item.count), 0);
+
+  return {
+    url: {
+      shortCode: url.shortCode,
+      shortUrl: baseUrl ? buildShortUrl(baseUrl, url.shortCode) : null,
+      expiresAt: url.expiresAt || null,
+      createdAt: url.createdAt,
+      clicks: url.clicks
+    },
+    metrics: {
+      totalClicks,
+      lastVisitedAt,
+      daysActive,
+      averageClicksPerDay: Number(averageClicksPerDay.toFixed(2)),
+      peakDayClicks
+    },
+    lastVisit: lastVisit
+      ? {
+          visitedAt: lastVisit.visitedAt,
+          referrer: lastVisit.referrer || null,
+          ipAddress: lastVisit.ipAddress || null,
+          userAgent: lastVisit.userAgent || null
+        }
+      : null,
+    dailyClickCounts: normalizeDailyCounts(dailyResults, days)
+  };
+}
+
+module.exports = { getUrlAnalytics, getUserAnalytics, getPublicUrlStats };
