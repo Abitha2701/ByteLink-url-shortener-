@@ -248,6 +248,71 @@ export default function Analytics() {
             </section>
 
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div className="grid gap-4 md:grid-cols-3">
+                <article className="rounded-3xl bg-slate-50 p-6">
+                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top browsers</p>
+                  <div className="mt-4 space-y-3">
+                    {analytics.browserCounts.slice(0, 3).map((item) => (
+                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
+                        <span>{item.label}</span>
+                        <span className="font-semibold text-slate-900">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+                <article className="rounded-3xl bg-slate-50 p-6">
+                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top operating systems</p>
+                  <div className="mt-4 space-y-3">
+                    {analytics.osCounts.slice(0, 3).map((item) => (
+                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
+                        <span>{item.label}</span>
+                        <span className="font-semibold text-slate-900">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+                <article className="rounded-3xl bg-slate-50 p-6">
+                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top device types</p>
+                  <div className="mt-4 space-y-3">
+                    {analytics.deviceCounts.slice(0, 3).map((item) => (
+                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
+                        <span>{item.label}</span>
+                        <span className="font-semibold text-slate-900">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div className="grid gap-4 md:grid-cols-2">
+                <article className="rounded-3xl bg-slate-50 p-6">
+                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top countries</p>
+                  <div className="mt-4 space-y-3">
+                    {analytics.countryCounts.slice(0, 4).map((item) => (
+                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
+                        <span>{item.label}</span>
+                        <span className="font-semibold text-slate-900">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+                <article className="rounded-3xl bg-slate-50 p-6">
+                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top cities</p>
+                  <div className="mt-4 space-y-3">
+                    {analytics.cityCounts.slice(0, 4).map((item) => (
+                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
+                        <span>{item.label}</span>
+                        <span className="font-semibold text-slate-900">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h3 className="text-xl font-semibold text-slate-900">Recent visits</h3>
               <p className="mt-2 text-sm text-slate-500">Latest click activity recorded across your links.</p>
 

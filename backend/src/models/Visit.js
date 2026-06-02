@@ -6,7 +6,12 @@ const visitSchema = new mongoose.Schema(
     visitedAt: { type: Date, default: () => new Date(), required: true },
     ipAddress: { type: String, trim: true },
     userAgent: { type: String, trim: true },
-    referrer: { type: String, trim: true }
+    referrer: { type: String, trim: true },
+    browser: { type: String, trim: true, default: null },
+    os: { type: String, trim: true, default: null },
+    device: { type: String, trim: true, default: null },
+    country: { type: String, trim: true, default: null },
+    city: { type: String, trim: true, default: null }
   },
   { versionKey: false }
 );

@@ -36,6 +36,13 @@ function normalizeDailyCounts(rawCounts, days) {
   }));
 }
 
+function formatCounts(rawCounts) {
+  return rawCounts.map((item) => ({
+    label: item._id || 'Unknown',
+    count: item.count
+  }));
+}
+
 async function getUrlAnalytics(userId, urlId, baseUrl, days = 14) {
   if (!mongoose.Types.ObjectId.isValid(urlId)) {
     throw new ApiError(400, 'Invalid URL identifier');
@@ -75,13 +82,48 @@ async function getUrlAnalytics(userId, urlId, baseUrl, days = 14) {
   const recentVisitsPromise = Visit.find(matchStage)
     .sort({ visitedAt: -1 })
     .limit(10)
-    .select('visitedAt referrer ipAddress userAgent')
+    .select('visitedAt referrer ipAddress userAgent browser os device country city')
     .lean();
 
-  const [summaryResults, dailyResults, recentVisits] = await Promise.all([
+  const browserCountsPromise = Visit.aggregate([
+    { $match: matchStage },
+    { $group: { _id: '$browser', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const osCountsPromise = Visit.aggregate([
+    { $match: matchStage },
+    { $group: { _id: '$os', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const deviceCountsPromise = Visit.aggregate([
+    { $match: matchStage },
+    { $group: { _id: '$device', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const countryCountsPromise = Visit.aggregate([
+    { $match: matchStage },
+    { $group: { _id: '$country', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const cityCountsPromise = Visit.aggregate([
+    { $match: matchStage },
+    { $group: { _id: '$city', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const [summaryResults, dailyResults, recentVisits, browserCounts, osCounts, deviceCounts, countryCounts, cityCounts] = await Promise.all([
     summaryPromise,
     dailyPromise,
-    recentVisitsPromise
+    recentVisitsPromise,
+    browserCountsPromise,
+    osCountsPromise,
+    deviceCountsPromise,
+    countryCountsPromise,
+    cityCountsPromise
   ]);
 
   const totalClicks = summaryResults[0]?.totalClicks || 0;
@@ -111,11 +153,21 @@ async function getUrlAnalytics(userId, urlId, baseUrl, days = 14) {
       peakDayClicks
     },
     dailyClickCounts: normalizeDailyCounts(dailyResults, days),
+    browserCounts: formatCounts(browserCounts),
+    osCounts: formatCounts(osCounts),
+    deviceCounts: formatCounts(deviceCounts),
+    countryCounts: formatCounts(countryCounts),
+    cityCounts: formatCounts(cityCounts),
     recentVisits: recentVisits.map((visit) => ({
       visitedAt: visit.visitedAt,
       referrer: visit.referrer || null,
       ipAddress: visit.ipAddress || null,
-      userAgent: visit.userAgent || null
+      userAgent: visit.userAgent || null,
+      browser: visit.browser || null,
+      os: visit.os || null,
+      device: visit.device || null,
+      country: visit.country || null,
+      city: visit.city || null
     }))
   };
 }
@@ -204,6 +256,11 @@ async function getUserAnalytics(userId, baseUrl, days = 14) {
         referrer: 1,
         ipAddress: 1,
         userAgent: 1,
+        browser: 1,
+        os: 1,
+        device: 1,
+        country: 1,
+        city: 1,
         urlId: { $toString: '$url._id' },
         shortCode: '$url.shortCode',
         longUrl: '$url.longUrl'
@@ -211,11 +268,46 @@ async function getUserAnalytics(userId, baseUrl, days = 14) {
     }
   ]);
 
-  const [summaryResults, dailyResults, topUrls, recentVisits] = await Promise.all([
+  const browserCountsPromise = Visit.aggregate([
+    { $match: { url: { $in: urlIds } } },
+    { $group: { _id: '$browser', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const osCountsPromise = Visit.aggregate([
+    { $match: { url: { $in: urlIds } } },
+    { $group: { _id: '$os', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const deviceCountsPromise = Visit.aggregate([
+    { $match: { url: { $in: urlIds } } },
+    { $group: { _id: '$device', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const countryCountsPromise = Visit.aggregate([
+    { $match: { url: { $in: urlIds } } },
+    { $group: { _id: '$country', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const cityCountsPromise = Visit.aggregate([
+    { $match: { url: { $in: urlIds } } },
+    { $group: { _id: '$city', count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+  const [summaryResults, dailyResults, topUrls, recentVisits, browserCounts, osCounts, deviceCounts, countryCounts, cityCounts] = await Promise.all([
     summaryPromise,
     dailyPromise,
     topUrlsPromise,
-    recentVisitsPromise
+    recentVisitsPromise,
+    browserCountsPromise,
+    osCountsPromise,
+    deviceCountsPromise,
+    countryCountsPromise,
+    cityCountsPromise
   ]);
 
   const totalClicks = summaryResults[0]?.totalClicks || 0;
@@ -238,6 +330,11 @@ async function getUserAnalytics(userId, baseUrl, days = 14) {
     lastVisitedAt,
     dailyClickCounts: normalizeDailyCounts(dailyResults, days),
     topUrls: formattedTopUrls,
+    browserCounts: formatCounts(browserCounts),
+    osCounts: formatCounts(osCounts),
+    deviceCounts: formatCounts(deviceCounts),
+    countryCounts: formatCounts(countryCounts),
+    cityCounts: formatCounts(cityCounts),
     recentVisits: recentVisits.map((visit) => ({
       visitedAt: visit.visitedAt,
       urlId: visit.urlId,
@@ -245,7 +342,12 @@ async function getUserAnalytics(userId, baseUrl, days = 14) {
       longUrl: visit.longUrl,
       referrer: visit.referrer || null,
       ipAddress: visit.ipAddress || null,
-      userAgent: visit.userAgent || null
+      userAgent: visit.userAgent || null,
+      browser: visit.browser || null,
+      os: visit.os || null,
+      device: visit.device || null,
+      country: visit.country || null,
+      city: visit.city || null
     }))
   };
 }
