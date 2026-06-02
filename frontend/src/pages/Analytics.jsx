@@ -207,12 +207,13 @@ export default function Analytics() {
                       <th className="px-4 py-3 font-medium text-slate-600">Short Code</th>
                       <th className="px-4 py-3 font-medium text-slate-600">Clicks</th>
                       <th className="px-4 py-3 font-medium text-slate-600">URL</th>
+                      <th className="px-4 py-3 font-medium text-slate-600">QR</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white">
                     {analytics.topUrls.length === 0 ? (
                       <tr>
-                        <td colSpan="3" className="px-4 py-6 text-center text-sm text-slate-500">
+                        <td colSpan="4" className="px-4 py-6 text-center text-sm text-slate-500">
                           No URL visits yet.
                         </td>
                       </tr>
@@ -222,6 +223,22 @@ export default function Analytics() {
                           <td className="px-4 py-4 font-medium text-slate-900">{item.shortCode}</td>
                           <td className="px-4 py-4 text-slate-700">{item.clicks}</td>
                           <td className="px-4 py-4 text-slate-600">{truncateText(item.longUrl, 60)}</td>
+                          <td className="px-4 py-4">
+                            {item.qrCodeUrl ? (
+                              <div className="flex items-center gap-2">
+                                <img src={item.qrCodeUrl} alt={`QR for ${item.shortCode}`} className="h-14 w-14 rounded-2xl border border-slate-200" />
+                                <a
+                                  href={item.qrCodeUrl}
+                                  download={`${item.shortCode}.png`}
+                                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-slate-500">Not ready</span>
+                            )}
+                          </td>
                         </tr>
                       ))
                     )}

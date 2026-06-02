@@ -1,7 +1,16 @@
+const QRCode = require('qrcode');
 const mongoose = require('mongoose');
 const Url = require('../models/Url');
 const Visit = require('../models/Visit');
 const ApiError = require('../errors/ApiError');
+
+function buildShortUrl(baseUrl, shortCode) {
+  return `${baseUrl.replace(/\/+$/, '')}/${shortCode}`;
+}
+
+async function generateQrCodeDataUrl(value) {
+  return QRCode.toDataURL(value);
+}
 
 function buildDateBuckets(days) {
   const buckets = [];
@@ -27,7 +36,7 @@ function normalizeDailyCounts(rawCounts, days) {
   }));
 }
 
-async function getUrlAnalytics(userId, urlId, days = 14) {
+async function getUrlAnalytics(userId, urlId, baseUrl, days = 14) {
   if (!mongoose.Types.ObjectId.isValid(urlId)) {
     throw new ApiError(400, 'Invalid URL identifier');
   }
@@ -81,11 +90,15 @@ async function getUrlAnalytics(userId, urlId, days = 14) {
   const averageClicksPerDay = totalClicks / daysActive;
   const peakDayClicks = dailyResults.reduce((max, item) => Math.max(max, item.count), 0);
 
+  const qrCodeUrl = baseUrl ? await generateQrCodeDataUrl(buildShortUrl(baseUrl, url.shortCode)) : null;
+
   return {
     url: {
       id: url._id.toString(),
       longUrl: url.longUrl,
       shortCode: url.shortCode,
+      shortUrl: baseUrl ? buildShortUrl(baseUrl, url.shortCode) : null,
+      qrCodeUrl,
       expiresAt: url.expiresAt || null,
       createdAt: url.createdAt,
       clicks: url.clicks
@@ -107,7 +120,7 @@ async function getUrlAnalytics(userId, urlId, days = 14) {
   };
 }
 
-async function getUserAnalytics(userId, days = 14) {
+async function getUserAnalytics(userId, baseUrl, days = 14) {
   const urls = await Url.find({ user: userId, active: true }).select('_id shortCode longUrl clicks createdAt').lean();
 
   if (urls.length === 0) {
@@ -208,13 +221,23 @@ async function getUserAnalytics(userId, days = 14) {
   const totalClicks = summaryResults[0]?.totalClicks || 0;
   const lastVisitedAt = summaryResults[0]?.lastVisitedAt || null;
 
+  const formattedTopUrls = await Promise.all(
+    topUrls.map(async (item) => {
+      const qrCodeUrl = baseUrl ? await generateQrCodeDataUrl(buildShortUrl(baseUrl, item.shortCode)) : null;
+      return {
+        ...item,
+        qrCodeUrl
+      };
+    })
+  );
+
   return {
     totalUrls: urls.length,
     activeUrls: urls.length,
     totalClicks,
     lastVisitedAt,
     dailyClickCounts: normalizeDailyCounts(dailyResults, days),
-    topUrls,
+    topUrls: formattedTopUrls,
     recentVisits: recentVisits.map((visit) => ({
       visitedAt: visit.visitedAt,
       urlId: visit.urlId,

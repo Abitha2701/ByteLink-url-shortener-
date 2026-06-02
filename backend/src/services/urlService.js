@@ -1,7 +1,16 @@
+const QRCode = require('qrcode');
 const Url = require('../models/Url');
 const ApiError = require('../errors/ApiError');
 const { generateUniqueShortCode } = require('../utils/codeGenerator');
 const { isValidUrl, normalizeUrl } = require('../utils/urlValidator');
+
+function buildShortUrl(baseUrl, shortCode) {
+  return `${baseUrl.replace(/\/+$|\s+/g, '')}/${shortCode}`;
+}
+
+async function generateQrCodeDataUrl(value) {
+  return QRCode.toDataURL(value);
+}
 
 async function findExistingUrlForUser(userId, longUrl) {
   return Url.findOne({ user: userId, longUrl });
@@ -84,12 +93,16 @@ async function deleteUrlById(userId, urlId) {
   return url;
 }
 
-function formatUrlResponse(url, baseUrl) {
+async function formatUrlResponse(url, baseUrl) {
+  const shortUrl = buildShortUrl(baseUrl, url.shortCode);
+  const qrCodeUrl = await generateQrCodeDataUrl(shortUrl);
+
   return {
     id: url._id.toString(),
     longUrl: url.longUrl,
     shortCode: url.shortCode,
-    shortUrl: `${baseUrl.replace(/\/+$/, '')}/${url.shortCode}`,
+    shortUrl,
+    qrCodeUrl,
     clicks: url.clicks,
     expiresAt: url.expiresAt || null,
     createdAt: url.createdAt,
