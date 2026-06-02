@@ -18,6 +18,10 @@ export default function Dashboard() {
   const [urlInput, setUrlInput] = useState('');
   const [aliasInput, setAliasInput] = useState('');
   const [expiresAtInput, setExpiresAtInput] = useState('');
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkResults, setBulkResults] = useState(null);
+  const [bulkError, setBulkError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -144,6 +148,33 @@ export default function Dashboard() {
     }
   };
 
+  const handleBulkUpload = async (event) => {
+    event.preventDefault();
+    setBulkError('');
+    setNotification('');
+    setBulkResults(null);
+
+    if (!bulkFile) {
+      setBulkError('Please choose a CSV file to upload.');
+      return;
+    }
+
+    setBulkUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', bulkFile);
+
+      const response = await api.post('/api/urls/bulk', formData);
+      setBulkResults(response.data.results || []);
+      setNotification('CSV upload processed successfully.');
+    } catch (err) {
+      setBulkError(err?.response?.data?.message || 'Unable to upload CSV file.');
+    } finally {
+      setBulkUploading(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     setError('');
     setDeletingId(id);
@@ -265,16 +296,76 @@ export default function Dashboard() {
           </button>
         </form>
 
-        {(error || notification) && (
+        {(error || notification || bulkError) && (
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {error && (
               <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+            )}
+            {bulkError && (
+              <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{bulkError}</div>
             )}
             {notification && (
               <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notification}</div>
             )}
           </div>
         )}
+
+        <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-2xl font-semibold text-slate-900">Bulk CSV upload</h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Upload a CSV file to shorten multiple URLs at once. Supported columns: <code>longUrl</code>, <code>alias</code>, and <code>expiresAt</code>.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleBulkUpload}
+              disabled={bulkUploading}
+              className="h-14 rounded-2xl bg-slate-900 px-6 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {bulkUploading ? 'Uploading…' : 'Upload CSV'}
+            </button>
+          </div>
+
+          <label className="mt-6 block">
+            <span className="text-sm font-medium text-slate-700">CSV file</span>
+            <input
+              type="file"
+              accept=".csv"
+              onChange={(event) => setBulkFile(event.target.files?.[0] || null)}
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-slate-700"
+            />
+          </label>
+
+          {bulkResults && (
+            <div className="mt-6 space-y-4">
+              <h4 className="text-lg font-semibold text-slate-900">Upload results</h4>
+              <div className="grid gap-3">
+                {bulkResults.map((result) => (
+                  <div
+                    key={result.row}
+                    className="rounded-3xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-semibold text-slate-900">Row {result.row}</p>
+                      {result.error ? (
+                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">Error</span>
+                      ) : (
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Created</span>
+                      )}
+                    </div>
+                    <p className="mt-2">
+                      {result.error
+                        ? result.error
+                        : `Short URL: ${result.url.shortUrl}`}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

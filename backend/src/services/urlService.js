@@ -3,6 +3,7 @@ const Url = require('../models/Url');
 const ApiError = require('../errors/ApiError');
 const { generateUniqueShortCode } = require('../utils/codeGenerator');
 const { isValidAlias, isValidUrl, normalizeUrl } = require('../utils/urlValidator');
+const { parse } = require('csv-parse/sync');
 
 function buildShortUrl(baseUrl, shortCode) {
   return `${baseUrl.replace(/\/+$|\s+/g, '')}/${shortCode}`;
@@ -130,6 +131,77 @@ async function deleteUrlById(userId, urlId) {
   return url;
 }
 
+function parseCsvRows(fileBuffer) {
+  const text = fileBuffer.toString('utf-8');
+  const rows = parse(text, {
+    skip_empty_lines: true,
+    trim: true
+  });
+
+  if (rows.length === 0) {
+    throw new ApiError(400, 'CSV file is empty.');
+  }
+
+  const headers = rows[0].map((value) => String(value || '').trim().toLowerCase());
+  const hasHeader = headers.some((value) => ['longurl', 'long_url', 'url'].includes(value));
+
+  return rows.map((row, index) => {
+    const rowNumber = index + 1;
+
+    if (hasHeader && index === 0) {
+      return null;
+    }
+
+    if (hasHeader) {
+      const line = {};
+      headers.forEach((columnName, columnIndex) => {
+        const rawValue = String(row[columnIndex] || '').trim();
+        if (['longurl', 'long_url', 'url'].includes(columnName)) {
+          line.longUrl = rawValue;
+        } else if (columnName === 'alias') {
+          line.alias = rawValue;
+        } else if (['expiresat', 'expires_at', 'expiration'].includes(columnName)) {
+          line.expiresAt = rawValue;
+        }
+      });
+      return { rowNumber, longUrl: line.longUrl || '', alias: line.alias || '', expiresAt: line.expiresAt || '' };
+    }
+
+    return {
+      rowNumber,
+      longUrl: String(row[0] || '').trim(),
+      alias: String(row[1] || '').trim(),
+      expiresAt: String(row[2] || '').trim()
+    };
+  }).filter(Boolean);
+}
+
+async function bulkCreateShortUrls(userId, fileBuffer, baseUrl) {
+  const records = parseCsvRows(fileBuffer);
+  const results = [];
+
+  for (const record of records) {
+    if (!record.longUrl) {
+      results.push({ row: record.rowNumber, longUrl: record.longUrl, alias: record.alias || null, error: 'Missing longUrl value.' });
+      continue;
+    }
+
+    try {
+      const url = await createShortUrl(userId, record.longUrl, record.alias || undefined, record.expiresAt || undefined);
+      const formatted = await formatUrlResponse(url, baseUrl);
+      results.push({ row: record.rowNumber, url: formatted });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        results.push({ row: record.rowNumber, longUrl: record.longUrl, alias: record.alias || null, error: err.message });
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  return results;
+}
+
 async function formatUrlResponse(url, baseUrl) {
   const shortUrl = buildShortUrl(baseUrl, url.shortCode);
   const qrCodeUrl = await generateQrCodeDataUrl(shortUrl);
@@ -150,6 +222,7 @@ async function formatUrlResponse(url, baseUrl) {
 module.exports = {
   createShortUrl,
   getUrlsForUser,
+  bulkCreateShortUrls,
   deleteUrlById,
   findUrlByShortCode,
   resolveRedirectUrl,

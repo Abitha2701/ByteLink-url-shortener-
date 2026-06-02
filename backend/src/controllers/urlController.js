@@ -29,6 +29,20 @@ async function getMyUrls(req, res, next) {
   }
 }
 
+async function bulkCreateUrls(req, res, next) {
+  try {
+    if (!req.file || !req.file.buffer) {
+      throw new ApiError(400, 'CSV file is required.');
+    }
+
+    const baseUrl = getAppBaseUrl(req);
+    const results = await urlService.bulkCreateShortUrls(req.user._id, req.file.buffer, baseUrl);
+    return res.status(200).json({ results });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 async function deleteUrl(req, res, next) {
   try {
     const { id } = req.params;
@@ -39,4 +53,4 @@ async function deleteUrl(req, res, next) {
   }
 }
 
-module.exports = { createUrl, getMyUrls, deleteUrl };
+module.exports = { createUrl, getMyUrls, bulkCreateUrls, deleteUrl };
