@@ -17,17 +17,18 @@ async function recordVisit(urlId, metadata = {}) {
   const parsed = new UAParser(metadata.userAgent || '');
   const geo = ipAddress ? geoip.lookup(ipAddress) : null;
 
+  // UAParser can occasionally return undefined sub-objects.
   const visit = {
     url: urlId,
     visitedAt: new Date(),
     ipAddress,
     userAgent: metadata.userAgent || null,
     referrer: metadata.referrer || null,
-    browser: parsed.browser.name || null,
-    os: parsed.os.name || null,
-    device: normalizeDeviceType(parsed.device.type),
-    country: geo?.country || null,
-    city: geo?.city || null
+    browser: parsed?.browser?.name ?? null,
+    os: parsed?.os?.name ?? null,
+    device: normalizeDeviceType(parsed?.device?.type),
+    country: geo?.country ?? null,
+    city: geo?.city ?? null
   };
 
   return Visit.create(visit);
