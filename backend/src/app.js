@@ -49,26 +49,27 @@ app.use(hpp());
    CORS CONFIG (FIXED)
 ========================= */
 
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+console.log("CORS_ORIGIN raw =", process.env.CORS_ORIGIN);
+
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map(o => o.trim());
 
-console.log("Allowed CORS Origins:", allowedOrigins);
+console.log("Allowed CORS Origins =", allowedOrigins);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow server-to-server / Postman
-    if (!origin) return callback(null, true);
+app.use(cors({origin: function (origin, callback) {
+  console.log("Incoming Origin:", origin);
 
-    if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+  if (!origin) return callback(null, true);
 
-    console.warn("Blocked CORS request from:", origin);
+  if (allowedOrigins.includes(origin)) {
+    console.log("Allowed Origin:", origin);
+    return callback(null, true);
+  }
 
-    // IMPORTANT: do NOT throw error (prevents 500 on OPTIONS)
-    return callback(null, false);
-  },
+  console.log("Blocked Origin:", origin);
+  return callback(null, false);
+},
 
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],

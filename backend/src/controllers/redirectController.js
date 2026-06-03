@@ -5,16 +5,41 @@ const visitService = require('../services/visitService');
 async function redirectToLongUrl(req, res) {
   const { shortCode } = req.params;
 
+  console.log('[redirectToLongUrl] hit', {
+
+    path: req.path,
+    shortCode,
+    headers: {
+      'user-agent': req.get('user-agent'),
+      referer: req.get('referer') || null,
+      referrer: req.get('referrer') || null
+    }
+  });
+
   try {
     const url = await urlService.resolveRedirectUrl(shortCode);
+
+    if (!url?.longUrl) {
+      return res.status(500).send('Unable to redirect: destination URL is missing');
+    }
+
     const metadata = {
       ipAddress: req.ip,
       userAgent: req.get('user-agent'),
       referrer: req.get('referrer') || req.get('referer') || null
     };
 
-    await visitService.recordVisit(url._id, metadata);
-    await urlService.incrementClickCount(url._id);
+    // Analytics should never block the redirect.
+    try {
+      await visitService.recordVisit(url._id, metadata);
+      await urlService.incrementClickCount(url._id);
+    } catch (analyticsErr) {
+      console.error('[redirectToLongUrl] analytics failure (redirect continues)', {
+        shortCode,
+        urlId: url._id,
+        error: analyticsErr?.message || analyticsErr,
+      });
+    }
 
     return res.redirect(url.longUrl);
   } catch (err) {

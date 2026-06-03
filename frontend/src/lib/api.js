@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URI || "https://bytelink-url-shortener-1.onrender.com";
-  
+const baseURL = import.meta.env.VITE_API_URI  || "https://bytelink-url-shortener-1.onrender.com";
+ console.log("VITE_API_URI =", import.meta.env.VITE_API_URI);
+console.log("baseURL =", baseURL); 
 const api = axios.create({
   baseURL,
   headers: {
