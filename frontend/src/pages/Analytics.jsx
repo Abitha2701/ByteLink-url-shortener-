@@ -31,19 +31,7 @@ function formatDateTime(value) {
 
 function truncateText(text, maxLength = 48) {
   if (!text) return '-';
-  return text.length <= maxLength ? text : `${text.slice(0, maxLength)}…`;
-}
-
-function formatDate(value) {
-  if (!value) {
-    return '-';
-  }
-
-  return new Date(value).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return text.length <= maxLength ? text : `${text.slice(0, maxLength)}...`;
 }
 
 export default function Analytics() {
@@ -81,11 +69,11 @@ export default function Analytics() {
           label: 'Daily Clicks',
           data: analytics.dailyClickCounts.map((item) => item.count),
           fill: true,
-          backgroundColor: 'rgba(59, 130, 246, 0.18)',
-          borderColor: 'rgba(59, 130, 246, 1)',
+          backgroundColor: 'rgba(6, 182, 212, 0.12)',
+          borderColor: 'rgba(6, 182, 212, 1)',
           tension: 0.35,
           pointRadius: 4,
-          pointBackgroundColor: 'rgba(59, 130, 246, 1)'
+          pointBackgroundColor: 'rgba(8, 145, 178, 1)'
         }
       ]
     };
@@ -101,7 +89,12 @@ export default function Analytics() {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top'
+        position: 'top',
+        labels: {
+          color: '#334155',
+          boxWidth: 10,
+          usePointStyle: true
+        }
       },
       tooltip: {
         mode: 'index',
@@ -112,11 +105,15 @@ export default function Analytics() {
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          color: '#64748b'
         }
       },
       y: {
         ticks: {
-          precision: 0
+          precision: 0,
+          color: '#64748b'
         },
         grid: {
           color: 'rgba(148, 163, 184, 0.2)'
@@ -127,59 +124,53 @@ export default function Analytics() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <section className="surface-card p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-3xl font-semibold text-slate-900">Analytics</h2>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Review your traffic trends, recent visits, and link performance in one responsive dashboard.
+            <p className="eyebrow">Analytics</p>
+            <h1 className="mt-3 text-4xl font-bold tracking-normal text-slate-950">Performance intelligence for every link</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Review traffic trends, recent visits, QR usage, and link performance in one responsive dashboard.
             </p>
           </div>
-          <div className="rounded-3xl bg-slate-50 px-4 py-3 text-slate-700">
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Last refresh</p>
+          <div className="soft-panel px-4 py-3 text-slate-700">
+            <p className="eyebrow">Last refresh</p>
             <p className="mt-1 text-base font-medium text-slate-900">
-              {analytics ? formatDateTime(analytics.lastVisitedAt) : 'Loading…'}
+              {analytics ? formatDateTime(analytics.lastVisitedAt) : 'Loading...'}
             </p>
           </div>
         </div>
       </section>
 
       {loading ? (
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm text-center text-slate-500">Loading analytics…</div>
+        <div className="surface-card p-8 text-center text-slate-500">Loading analytics...</div>
       ) : error ? (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">{error}</div>
       ) : (
         <div className="space-y-8">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <article className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Total clicks</p>
-              <p className="mt-4 text-3xl font-semibold text-slate-900">{analytics.totalClicks}</p>
-              <p className="mt-2 text-sm text-slate-500">Clicks across all active links.</p>
-            </article>
-            <article className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Active links</p>
-              <p className="mt-4 text-3xl font-semibold text-slate-900">{analytics.activeUrls}</p>
-              <p className="mt-2 text-sm text-slate-500">URLs currently being tracked.</p>
-            </article>
-            <article className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Avg clicks / day</p>
-              <p className="mt-4 text-3xl font-semibold text-slate-900">{analytics.averageClicksPerDay}</p>
-              <p className="mt-2 text-sm text-slate-500">Average daily click activity.</p>
-            </article>
-            <article className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Peak day clicks</p>
-              <p className="mt-4 text-3xl font-semibold text-slate-900">{peakDayClicks}</p>
-              <p className="mt-2 text-sm text-slate-500">Largest single-day click total.</p>
-            </article>
+            {[
+              ['Total clicks', analytics.totalClicks, 'C', 'Clicks across all active links.'],
+              ['Active links', analytics.activeUrls, 'A', 'URLs currently being tracked.'],
+              ['Avg clicks / day', analytics.averageClicksPerDay, 'D', 'Average daily click activity.'],
+              ['Peak day clicks', peakDayClicks, 'P', 'Largest single-day click total.']
+            ].map(([label, value, icon, helper]) => (
+              <article className="metric-card" key={label}>
+                <span className="metric-icon">{icon}</span>
+                <p className="mt-5 text-sm font-medium text-slate-500">{label}</p>
+                <p className="mt-3 text-3xl font-semibold text-slate-950">{value}</p>
+                <p className="mt-2 text-sm text-slate-500">{helper}</p>
+              </article>
+            ))}
           </div>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <section className="surface-card p-6 sm:p-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h3 className="text-xl font-semibold text-slate-900">Daily click trend</h3>
+                <h2 className="text-xl font-semibold text-slate-950">Daily click trend</h2>
                 <p className="mt-2 text-sm text-slate-500">Track how clicks move over the last two weeks.</p>
               </div>
-              <div className="rounded-full bg-slate-50 px-4 py-2 text-sm text-slate-700">
+              <div className="status-pill bg-cyan-50 text-cyan-700">
                 {analytics.dailyClickCounts.reduce((sum, item) => sum + item.count, 0)} clicks over {analytics.dailyClickCounts.length} days
               </div>
             </div>
@@ -189,49 +180,43 @@ export default function Analytics() {
           </section>
 
           <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <section className="surface-card p-6 sm:p-8">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-slate-900">Top URLs</h3>
+                  <h2 className="text-xl font-semibold text-slate-950">Top URLs</h2>
                   <p className="mt-2 text-sm text-slate-500">Your most clicked links this period.</p>
                 </div>
-                <span className="rounded-full bg-slate-50 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-                  Top 5
-                </span>
+                <span className="status-pill bg-slate-50 text-slate-500">Top 5</span>
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200">
-                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                  <thead className="bg-slate-50">
+              <div className="mt-6 table-shell">
+                <table className="data-table">
+                  <thead>
                     <tr>
-                      <th className="px-4 py-3 font-medium text-slate-600">Short Code</th>
-                      <th className="px-4 py-3 font-medium text-slate-600">Clicks</th>
-                      <th className="px-4 py-3 font-medium text-slate-600">URL</th>
-                      <th className="px-4 py-3 font-medium text-slate-600">QR</th>
+                      <th>Short Code</th>
+                      <th>Clicks</th>
+                      <th>URL</th>
+                      <th>QR</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
+                  <tbody>
                     {analytics.topUrls.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="px-4 py-6 text-center text-sm text-slate-500">
+                        <td colSpan="4" className="text-center text-sm text-slate-500">
                           No URL visits yet.
                         </td>
                       </tr>
                     ) : (
                       analytics.topUrls.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50">
-                          <td className="px-4 py-4 font-medium text-slate-900">{item.shortCode}</td>
-                          <td className="px-4 py-4 text-slate-700">{item.clicks}</td>
-                          <td className="px-4 py-4 text-slate-600">{truncateText(item.longUrl, 60)}</td>
-                          <td className="px-4 py-4">
+                        <tr key={item.id}>
+                          <td className="font-medium text-slate-950">{item.shortCode}</td>
+                          <td>{item.clicks}</td>
+                          <td>{truncateText(item.longUrl, 60)}</td>
+                          <td>
                             {item.qrCodeUrl ? (
                               <div className="flex items-center gap-2">
                                 <img src={item.qrCodeUrl} alt={`QR for ${item.shortCode}`} className="h-14 w-14 rounded-2xl border border-slate-200" />
-                                <a
-                                  href={item.qrCodeUrl}
-                                  download={`${item.shortCode}.png`}
-                                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                                >
+                                <a href={item.qrCodeUrl} download={`${item.shortCode}.png`} className="btn-secondary min-h-9 px-3 text-xs">
                                   Download
                                 </a>
                               </div>
@@ -247,101 +232,75 @@ export default function Analytics() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <div className="grid gap-4 md:grid-cols-3">
-                <article className="rounded-3xl bg-slate-50 p-6">
-                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top browsers</p>
-                  <div className="mt-4 space-y-3">
-                    {analytics.browserCounts.slice(0, 3).map((item) => (
-                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
-                        <span>{item.label}</span>
-                        <span className="font-semibold text-slate-900">{item.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-                <article className="rounded-3xl bg-slate-50 p-6">
-                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top operating systems</p>
-                  <div className="mt-4 space-y-3">
-                    {analytics.osCounts.slice(0, 3).map((item) => (
-                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
-                        <span>{item.label}</span>
-                        <span className="font-semibold text-slate-900">{item.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-                <article className="rounded-3xl bg-slate-50 p-6">
-                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top device types</p>
-                  <div className="mt-4 space-y-3">
-                    {analytics.deviceCounts.slice(0, 3).map((item) => (
-                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
-                        <span>{item.label}</span>
-                        <span className="font-semibold text-slate-900">{item.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </article>
+            <section className="surface-card p-6 sm:p-8">
+              <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-1">
+                {[
+                  ['Top browsers', analytics.browserCounts],
+                  ['Top operating systems', analytics.osCounts],
+                  ['Top device types', analytics.deviceCounts]
+                ].map(([label, items]) => (
+                  <article className="soft-panel p-6" key={label}>
+                    <p className="eyebrow">{label}</p>
+                    <div className="mt-4 space-y-3">
+                      {items.slice(0, 3).map((item) => (
+                        <div key={item.label} className="flex items-center justify-between gap-3 text-sm text-slate-700">
+                          <span className="truncate">{item.label}</span>
+                          <span className="font-semibold text-slate-950">{item.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <section className="surface-card p-6 sm:p-8">
               <div className="grid gap-4 md:grid-cols-2">
-                <article className="rounded-3xl bg-slate-50 p-6">
-                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top countries</p>
-                  <div className="mt-4 space-y-3">
-                    {analytics.countryCounts.slice(0, 4).map((item) => (
-                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
-                        <span>{item.label}</span>
-                        <span className="font-semibold text-slate-900">{item.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-                <article className="rounded-3xl bg-slate-50 p-6">
-                  <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Top cities</p>
-                  <div className="mt-4 space-y-3">
-                    {analytics.cityCounts.slice(0, 4).map((item) => (
-                      <div key={item.label} className="flex items-center justify-between text-sm text-slate-700">
-                        <span>{item.label}</span>
-                        <span className="font-semibold text-slate-900">{item.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </article>
+                {[
+                  ['Top countries', analytics.countryCounts],
+                  ['Top cities', analytics.cityCounts]
+                ].map(([label, items]) => (
+                  <article className="soft-panel p-6" key={label}>
+                    <p className="eyebrow">{label}</p>
+                    <div className="mt-4 space-y-3">
+                      {items.slice(0, 4).map((item) => (
+                        <div key={item.label} className="flex items-center justify-between gap-3 text-sm text-slate-700">
+                          <span className="truncate">{item.label}</span>
+                          <span className="font-semibold text-slate-950">{item.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <h3 className="text-xl font-semibold text-slate-900">Recent visits</h3>
+            <section className="surface-card p-6 sm:p-8">
+              <h2 className="text-xl font-semibold text-slate-950">Recent visits</h2>
               <p className="mt-2 text-sm text-slate-500">Latest click activity recorded across your links.</p>
 
               <div className="mt-6 space-y-4">
                 {analytics.recentVisits.length === 0 ? (
-                  <div className="rounded-3xl bg-slate-50 p-6 text-center text-sm text-slate-500">
-                    No visit data available yet.
-                  </div>
+                  <div className="soft-panel p-6 text-center text-sm text-slate-500">No visit data available yet.</div>
                 ) : (
                   analytics.recentVisits.map((visit, index) => (
-                    <article key={`${visit.visitedAt}-${index}`} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <article key={`${visit.visitedAt}-${index}`} className="soft-panel p-4">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="text-sm text-slate-500">Visited</p>
-                          <p className="mt-1 font-medium text-slate-900">{formatDateTime(visit.visitedAt)}</p>
+                          <p className="mt-1 font-medium text-slate-950">{formatDateTime(visit.visitedAt)}</p>
                         </div>
-                        <div className="rounded-full bg-white px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-                          {visit.ipAddress || 'Unknown IP'}
-                        </div>
+                        <div className="status-pill bg-white text-slate-500">{visit.ipAddress || 'Unknown IP'}</div>
                       </div>
                       <div className="mt-4 space-y-2 text-sm text-slate-600">
                         <p>
-                          <span className="font-medium text-slate-900">URL:</span> {truncateText(visit.longUrl ?? visit.referrer ?? 'Unknown', 70)}
+                          <span className="font-medium text-slate-950">URL:</span> {truncateText(visit.longUrl ?? visit.referrer ?? 'Unknown', 70)}
                         </p>
                         <p>
-                          <span className="font-medium text-slate-900">Referrer:</span> {visit.referrer || 'Direct'}
+                          <span className="font-medium text-slate-950">Referrer:</span> {visit.referrer || 'Direct'}
                         </p>
                         <p>
-                          <span className="font-medium text-slate-900">User agent:</span> {truncateText(visit.userAgent, 70)}
+                          <span className="font-medium text-slate-950">User agent:</span> {truncateText(visit.userAgent, 70)}
                         </p>
                       </div>
                     </article>

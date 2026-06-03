@@ -45,62 +45,51 @@ export default function Login() {
   };
 
   return (
-    <div className="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h2 className="text-3xl font-semibold text-slate-900">Login to Bytelink</h2>
-      <p className="mt-2 text-sm text-slate-600">Enter your credentials to access the dashboard.</p>
+    <div className="mx-auto grid min-h-[calc(100vh-260px)] max-w-5xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="hidden lg:block">
+        <p className="eyebrow">ByteLink</p>
+        <h1 className="mt-4 text-5xl font-bold tracking-normal text-slate-950">Welcome Back</h1>
+        <p className="mt-4 max-w-md text-base leading-7 text-slate-600">
+          Sign in to manage your links, QR codes, bulk uploads, and analytics dashboard.
+        </p>
+      </section>
 
-      <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
-        <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-            autoComplete="email"
-            required
-          />
+      <section className="surface-card mx-auto w-full max-w-md p-8">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500 text-lg font-bold text-white">B</div>
+          <h2 className="mt-5 text-3xl font-semibold tracking-normal text-slate-950">Welcome Back</h2>
+          <p className="mt-2 text-sm text-slate-600">Enter your credentials to access your dashboard.</p>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-            autoComplete="current-password"
-            required
-          />
-        </div>
-
-        {(formError || authError) && (
-          <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
-            {formError || authError}
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
+          <div>
+            <label className="label-text" htmlFor="email">
+              Email
+            </label>
+            <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="form-input" autoComplete="email" required />
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-        >
-          {isSubmitting ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
+          <div>
+            <label className="label-text" htmlFor="password">
+              Password
+            </label>
+            <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="form-input" autoComplete="current-password" required />
+          </div>
 
-      <p className="mt-6 text-center text-sm text-slate-600">
-        New to Bytelink?{' '}
-        <Link className="font-semibold text-slate-900 hover:text-slate-700" to="/signup">
-          Create an account
-        </Link>
-      </p>
+          {(formError || authError) && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{formError || authError}</div>}
+
+          <button type="submit" disabled={isSubmitting} className="btn-primary h-12 w-full disabled:cursor-not-allowed disabled:bg-slate-400">
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-slate-600">
+          New to ByteLink?{' '}
+          <Link className="font-semibold text-cyan-700 hover:text-cyan-800" to="/signup">
+            Create an account
+          </Link>
+        </p>
+      </section>
     </div>
   );
 }

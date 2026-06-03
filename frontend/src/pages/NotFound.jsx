@@ -2,10 +2,11 @@ import { Link } from 'react-router-dom';
 
 function NotFound() {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-      <h2 className="text-4xl font-semibold text-slate-900">Looks like you took a wrong turn</h2>
-      <p className="mt-4 text-slate-600">This page hasn't been built yet, but the rest of the app is ready to grow.</p>
-      <Link className="mt-6 inline-block rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700" to="/">
+    <div className="surface-card mx-auto max-w-2xl p-10 text-center">
+      <p className="eyebrow">404</p>
+      <h1 className="mt-4 text-4xl font-bold tracking-normal text-slate-950">Page not found</h1>
+      <p className="mt-4 text-slate-600">The page you requested is not available in ByteLink.</p>
+      <Link className="btn-primary mt-7" to="/">
         Back to home
       </Link>
     </div>

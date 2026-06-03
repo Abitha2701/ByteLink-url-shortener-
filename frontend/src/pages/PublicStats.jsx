@@ -26,7 +26,7 @@ function formatDateTime(dateString) {
 
 function truncate(value, max = 80) {
   if (!value) return '-';
-  return value.length <= max ? value : `${value.slice(0, max)}…`;
+  return value.length <= max ? value : `${value.slice(0, max)}...`;
 }
 
 export default function PublicStats() {
@@ -51,23 +51,14 @@ export default function PublicStats() {
   }, [shortCode]);
 
   if (loading) {
-    return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-        Loading public metrics…
-      </div>
-    );
+    return <div className="surface-card p-10 text-center text-slate-500">Loading public metrics...</div>;
   }
 
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-red-700 shadow-sm">
-          {error}
-        </div>
-        <Link
-          to="/"
-          className="inline-flex rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
-        >
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-red-700">{error}</div>
+        <Link to="/" className="btn-primary">
           Back to home
         </Link>
       </div>
@@ -79,115 +70,95 @@ export default function PublicStats() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <section className="surface-card p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-3xl font-semibold text-slate-900">Public stats for {shortCode}</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Anyone with this link can view the public metrics below.
-            </p>
+            <p className="eyebrow">Public stats</p>
+            <h1 className="mt-3 text-4xl font-bold tracking-normal text-slate-950">{shortCode}</h1>
+            <p className="mt-2 text-sm text-slate-600">Anyone with this link can view the public metrics below.</p>
           </div>
-          <div className="rounded-3xl bg-slate-50 px-4 py-3 text-slate-700">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Status</p>
-            <p className="mt-1 text-xl font-semibold text-slate-900">{isExpired ? 'Expired' : 'Active'}</p>
+          <div className="soft-panel px-4 py-3 text-slate-700">
+            <p className="eyebrow">Status</p>
+            <p className="mt-1 text-xl font-semibold text-slate-950">{isExpired ? 'Expired' : 'Active'}</p>
           </div>
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-3xl bg-slate-50 p-6">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Clicks</p>
-            <p className="mt-3 text-3xl font-semibold text-slate-900">{metrics.totalClicks}</p>
-          </article>
-          <article className="rounded-3xl bg-slate-50 p-6">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Created</p>
-            <p className="mt-3 text-3xl font-semibold text-slate-900">{formatDate(url.createdAt)}</p>
-          </article>
-          <article className="rounded-3xl bg-slate-50 p-6">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Last visit</p>
-            <p className="mt-3 text-3xl font-semibold text-slate-900">
-              {lastVisit ? formatDateTime(lastVisit.visitedAt) : 'No visits yet'}
-            </p>
-          </article>
-          <article className="rounded-3xl bg-slate-50 p-6">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Average / day</p>
-            <p className="mt-3 text-3xl font-semibold text-slate-900">{metrics.averageClicksPerDay}</p>
-          </article>
+          {[
+            ['Clicks', metrics.totalClicks],
+            ['Created', formatDate(url.createdAt)],
+            ['Last visit', lastVisit ? formatDateTime(lastVisit.visitedAt) : 'No visits yet'],
+            ['Average / day', metrics.averageClicksPerDay]
+          ].map(([label, value]) => (
+            <article className="metric-card" key={label}>
+              <p className="text-sm font-medium text-slate-500">{label}</p>
+              <p className="mt-3 break-words text-2xl font-semibold text-slate-950">{value}</p>
+            </article>
+          ))}
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-3xl bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Short URL</p>
-            <a
-              href={url.shortUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-3 block break-all text-base font-medium text-slate-900 hover:text-slate-700"
-            >
+          <div className="soft-panel p-6">
+            <p className="eyebrow">Short URL</p>
+            <a href={url.shortUrl} target="_blank" rel="noreferrer" className="mt-3 block break-all text-base font-medium text-cyan-700 hover:text-cyan-800">
               {url.shortUrl}
             </a>
           </div>
-          <div className="rounded-3xl bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Expiration</p>
-            <p className="mt-3 text-sm font-medium text-slate-900">
-              {url.expiresAt ? formatDateTime(url.expiresAt) : 'No expiration'}
-            </p>
+          <div className="soft-panel p-6">
+            <p className="eyebrow">Expiration</p>
+            <p className="mt-3 text-sm font-medium text-slate-950">{url.expiresAt ? formatDateTime(url.expiresAt) : 'No expiration'}</p>
           </div>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <section className="surface-card p-6 sm:p-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-2xl font-semibold text-slate-900">Recent visit details</h3>
+            <h2 className="text-2xl font-semibold text-slate-950">Recent visit details</h2>
             <p className="mt-2 text-sm text-slate-600">Last known visit information for this short link.</p>
           </div>
-          <Link
-            to="/"
-            className="inline-flex rounded-3xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
-          >
+          <Link to="/" className="btn-secondary">
             Back to home
           </Link>
         </div>
 
         {lastVisit ? (
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-3xl bg-slate-50 p-6">
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Referrer</p>
-              <p className="mt-3 text-sm font-medium text-slate-900">{truncate(lastVisit.referrer || 'Direct')}</p>
+            <div className="soft-panel p-6">
+              <p className="eyebrow">Referrer</p>
+              <p className="mt-3 text-sm font-medium text-slate-950">{truncate(lastVisit.referrer || 'Direct')}</p>
             </div>
-            <div className="rounded-3xl bg-slate-50 p-6">
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">IP address</p>
-              <p className="mt-3 text-sm font-medium text-slate-900">{lastVisit.ipAddress || 'Unknown'}</p>
+            <div className="soft-panel p-6">
+              <p className="eyebrow">IP address</p>
+              <p className="mt-3 text-sm font-medium text-slate-950">{lastVisit.ipAddress || 'Unknown'}</p>
             </div>
-            <div className="rounded-3xl bg-slate-50 p-6">
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">User agent</p>
-              <p className="mt-3 text-sm font-medium text-slate-900">{truncate(lastVisit.userAgent, 120)}</p>
+            <div className="soft-panel p-6">
+              <p className="eyebrow">User agent</p>
+              <p className="mt-3 text-sm font-medium text-slate-950">{truncate(lastVisit.userAgent, 120)}</p>
             </div>
           </div>
         ) : (
-          <div className="mt-6 rounded-3xl bg-slate-50 p-8 text-center text-slate-500">
-            No visit details are available yet.
-          </div>
+          <div className="mt-6 soft-panel p-8 text-center text-slate-500">No visit details are available yet.</div>
         )}
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h3 className="text-2xl font-semibold text-slate-900">Click history</h3>
+      <section className="surface-card p-6 sm:p-8">
+        <h2 className="text-2xl font-semibold text-slate-950">Click history</h2>
         <p className="mt-2 text-sm text-slate-600">Daily click count for the last two weeks.</p>
 
-        <div className="mt-6 overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-            <thead className="bg-slate-50">
+        <div className="mt-6 table-shell">
+          <table className="data-table min-w-[420px]">
+            <thead>
               <tr>
-                <th className="px-4 py-3 font-medium text-slate-600">Date</th>
-                <th className="px-4 py-3 font-medium text-slate-600">Clicks</th>
+                <th>Date</th>
+                <th>Clicks</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 bg-white">
+            <tbody>
               {dailyClickCounts.map((item) => (
                 <tr key={item.date}>
-                  <td className="px-4 py-3 text-slate-700">{item.date}</td>
-                  <td className="px-4 py-3 font-semibold text-slate-900">{item.count}</td>
+                  <td>{item.date}</td>
+                  <td className="font-semibold text-slate-950">{item.count}</td>
                 </tr>
               ))}
             </tbody>
