@@ -10,8 +10,11 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +30,11 @@ export default function Signup() {
 
     if (!name || !email || !password || !confirmPassword) {
       setFormError('All fields are required.');
+      return;
+    }
+
+    if (!acceptedTerms) {
+      setFormError('Please accept the Terms & Conditions to continue.');
       return;
     }
 
@@ -55,65 +63,130 @@ export default function Signup() {
   };
 
   return (
-    <div className="mx-auto grid min-h-[calc(100vh-260px)] max-w-5xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="hidden lg:block">
-        <p className="eyebrow">ByteLink</p>
-        <h1 className="mt-4 text-5xl font-bold tracking-normal text-slate-950">Create Your Account</h1>
-        <p className="mt-4 max-w-md text-base leading-7 text-slate-600">
-          Start saving short links, generating QR codes, and reading analytics from a focused workspace.
-        </p>
-      </section>
-
-      <section className="surface-card mx-auto w-full max-w-md p-8">
-        <div className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500 text-lg font-bold text-white">B</div>
-          <h2 className="mt-5 text-3xl font-semibold tracking-normal text-slate-950">Create Your Account</h2>
-          <p className="mt-2 text-sm text-slate-600">Register to start managing ByteLinks.</p>
-        </div>
-
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
-          <div>
-            <label className="label-text" htmlFor="name">
-              Name
-            </label>
-            <input id="name" type="text" value={name} onChange={(event) => setName(event.target.value)} className="form-input" autoComplete="name" required />
-          </div>
+    <div className="auth-shell">
+      <div className="auth-grid">
+        <section className="auth-left hidden lg:block">
+          <div className="auth-noise" />
+          <div className="auth-float-shape s1" />
+          <div className="auth-float-shape s2" />
+          <div className="auth-float-shape s3" />
 
           <div>
-            <label className="label-text" htmlFor="email">
-              Email
-            </label>
-            <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="form-input" autoComplete="email" required />
+            <p className="eyebrow" style={{ margin: 0 }}>
+              ByteLink
+            </p>
+            <h1 className="mt-4 text-5xl font-bold tracking-normal" style={{ marginBottom: 8, color: '#0f172a' }}>
+              Shorten. <br />
+              <span className="auth-gradient-text">Track.</span> <br />
+              <span className="auth-gradient-text">Grow.</span>
+            </h1>
+            <p className="mt-4 max-w-md text-base leading-7" style={{ color: '#64748b' }}>
+              From branded short links to real-time analytics — launch faster with a premium, team-ready workspace.
+            </p>
+
+            <div className="auth-left-copy">
+              <h3 className="auth-left-heading">Real-time visibility for every link</h3>
+              <p className="auth-left-paragraph">
+                Create branded short links, track clicks instantly, and understand your audience in real time.
+              </p>
+            </div>
+
+
+
+
           </div>
+        </section>
 
-          <div>
-            <label className="label-text" htmlFor="password">
-              Password
-            </label>
-            <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="form-input" autoComplete="new-password" required />
+        <section className="auth-card">
+          <div className="auth-card-inner">
+            <div className="auth-avatar" aria-hidden="true">
+              B
+            </div>
+
+            <h2 className="auth-title">Create Your Account</h2>
+            <p className="auth-subtitle">Start building better links with a premium analytics experience.</p>
+
+            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+              <div className="auth-field">
+                <label htmlFor="name">Full Name</label>
+                <input
+                  id="name"
+                  className="auth-input"
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  autoComplete="name"
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  className="auth-input"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              <div className="auth-field auth-password-row">
+                <label htmlFor="password">Password</label>
+               <input
+  id="confirmPassword"
+  className="auth-input auth-password-input"
+  type={isPasswordVisible ? 'text' : 'password'}
+  value={confirmPassword}
+  onChange={(event) => setConfirmPassword(event.target.value)}
+  autoComplete="new-password"
+  required
+/>
+                <button type="button" className="auth-toggle" onClick={() => setIsPasswordVisible((v) => !v)}>
+                  {isPasswordVisible ? 'Hide' : 'Show'}
+                </button>
+              </div>
+
+              <div className="auth-field auth-password-row">
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  className="auth-input"
+                  type={isPasswordVisible ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+                <button type="button" className="auth-toggle" onClick={() => setIsPasswordVisible((v) => !v)}>
+                  {isPasswordVisible ? 'Hide' : 'Show'}
+                </button>
+              </div>
+
+              {(formError || authError) && <div className="auth-error">{formError || authError}</div>}
+
+              <label className="auth-check" style={{ alignItems: 'flex-start', gap: 12 }}>
+                <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} />
+                <span>
+                  I agree to the <span style={{ color: '#0f172a', fontWeight: 900 }}>Terms &amp; Conditions</span>
+                </span>
+              </label>
+
+              <button type="submit" disabled={isSubmitting} className="auth-gradient-btn auth-btn-solid">
+                {isSubmitting ? 'Creating account...' : 'Create Account'}
+              </button>
+
+              <div className="auth-footer-link">
+                Already have an account?{' '}
+                <Link to="/login">Sign In</Link>
+              </div>
+            </form>
           </div>
-
-          <div>
-            <label className="label-text" htmlFor="confirmPassword">
-              Confirm Password
-            </label>
-            <input id="confirmPassword" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="form-input" autoComplete="new-password" required />
-          </div>
-
-          {(formError || authError) && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{formError || authError}</div>}
-
-          <button type="submit" disabled={isSubmitting} className="btn-primary h-12 w-full disabled:cursor-not-allowed disabled:bg-slate-400">
-            {isSubmitting ? 'Creating account...' : 'Register'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{' '}
-          <Link className="font-semibold text-cyan-700 hover:text-cyan-800" to="/login">
-            Sign in
-          </Link>
-        </p>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
+

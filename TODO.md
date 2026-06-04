@@ -1,12 +1,11 @@
-# TODO - Fix short URL redirect issue
+# TODO - ByteLink Auth Redesign
 
-## Plan (Option A: redirect to longUrl)
-- [ ] Verify which shortUrl is being generated (backend base URL vs frontend base URL) and ensure it points to the backend redirect host.
-- [ ] Confirm redirect route is reachable at the shortUrl host/path (e.g. https://<host>/<shortCode> hits backend `app.use('/', redirectRoutes)`).
-- [ ] Ensure frontend/build hosting is not swallowing the path (SPA fallback vs backend).
-- [ ] Add temporary logging in redirect controller to confirm request arrives and which shortCode is parsed.
-- [ ] If misrouting is due to frontend hosting: update deployment/NGINX to forward `/:shortCode` to backend.
+- [x] Update `frontend/src/index.css` with new auth page styles (glass card, gradient buttons, focus glow, decorative shapes animations).
 
-## Completion criteria
-- [ ] Opening a generated short URL results in a 30x redirect to the correct longUrl.
+- [x] Redesign `frontend/src/pages/Login.jsx` UI per spec (split-screen left marketing + right glass card, email/password only, remember me, forgot password link, password show/hide toggle, micro-interactions).
+- [x] Redesign `frontend/src/pages/Signup.jsx` UI per spec (same design language, full name/email/password/confirm, terms checkbox, gradient create account button, no social login).
+
+- [ ] Ensure navbar remains unchanged (do not edit `frontend/src/App.jsx`).
+- [x] Run frontend build/dev checks and quickly validate visual + form behavior.
+
 
