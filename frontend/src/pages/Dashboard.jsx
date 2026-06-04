@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+
 
 const PAGE_SIZE = 6;
 
@@ -53,8 +53,7 @@ function getCampaignLabel(url) {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
-  const location = useLocation();
+const { user } = useAuth();
   const [urls, setUrls] = useState([]);
   const [urlInput, setUrlInput] = useState('');
   const [aliasInput, setAliasInput] = useState('');
