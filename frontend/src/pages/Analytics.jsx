@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -35,9 +36,11 @@ function truncateText(text, maxLength = 48) {
 }
 
 export default function Analytics() {
+  const navigate = useNavigate();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
 
   useEffect(() => {
     setLoading(true);
@@ -155,9 +158,13 @@ export default function Analytics() {
           <p className="text-sm text-slate-600">
             Analytics appear after you create a ByteLink (and visits after someone clicks it).
           </p>
-          <a href="/dashboard" className="btn-primary inline-flex items-center justify-center">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="btn-primary inline-flex items-center justify-center"
+          >
             Generate link
-          </a>
+          </button>
         </div>
       ) : (
         <div className="space-y-8">
