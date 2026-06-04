@@ -122,6 +122,9 @@ export default function Analytics() {
     }
   };
 
+  const hasAnyData = analytics && Array.isArray(analytics.dailyClickCounts) && analytics.dailyClickCounts.length > 0;
+  const hasUrlsOrVisits = Boolean(analytics && ((analytics.activeUrls && analytics.activeUrls > 0) || (analytics.totalClicks && analytics.totalClicks > 0) || (analytics.topUrls && analytics.topUrls.length > 0) || (analytics.recentVisits && analytics.recentVisits.length > 0)));
+
   return (
     <div className="space-y-8">
       <section className="surface-card p-6 sm:p-8">
@@ -146,6 +149,16 @@ export default function Analytics() {
         <div className="surface-card p-8 text-center text-slate-500">Loading analytics...</div>
       ) : error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">{error}</div>
+      ) : !hasAnyData || !hasUrlsOrVisits ? (
+        <div className="space-y-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10">
+          <p className="text-lg font-semibold text-slate-950">Generate your first link to see analytics</p>
+          <p className="text-sm text-slate-600">
+            Analytics appear after you create a ByteLink (and visits after someone clicks it).
+          </p>
+          <a href="/dashboard" className="btn-primary inline-flex items-center justify-center">
+            Generate link
+          </a>
+        </div>
       ) : (
         <div className="space-y-8">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
