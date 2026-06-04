@@ -135,18 +135,15 @@ export default function Signup() {
 
               <div className="auth-field auth-password-row">
                 <label htmlFor="password">Password</label>
-               <input
-  id="confirmPassword"
-  className="auth-input auth-password-input"
-  type={isPasswordVisible ? 'text' : 'password'}
-  value={confirmPassword}
-  onChange={(event) => setConfirmPassword(event.target.value)}
-  autoComplete="new-password"
-  required
-/>
-                <button type="button" className="auth-toggle" onClick={() => setIsPasswordVisible((v) => !v)}>
-                  {isPasswordVisible ? 'Hide' : 'Show'}
-                </button>
+                <input
+                  id="password"
+                  className="auth-input"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
               </div>
 
               <div className="auth-field auth-password-row">
@@ -154,16 +151,14 @@ export default function Signup() {
                 <input
                   id="confirmPassword"
                   className="auth-input"
-                  type={isPasswordVisible ? 'text' : 'password'}
+                  type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   autoComplete="new-password"
                   required
                 />
-                <button type="button" className="auth-toggle" onClick={() => setIsPasswordVisible((v) => !v)}>
-                  {isPasswordVisible ? 'Hide' : 'Show'}
-                </button>
               </div>
+
 
               {(formError || authError) && <div className="auth-error">{formError || authError}</div>}
 
